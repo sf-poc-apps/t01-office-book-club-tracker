@@ -15,6 +15,8 @@ short comments. No login - members identify themselves by a first name.
   per person per book.
 - Book detail page shows the average rating (rounded to 1 decimal) and all comments;
   shows "No ratings yet" when unrated.
+- Search: filter the list by title or author with the search box on `/` (server-side,
+  case-insensitive; e.g. `/?q=orwell`), or browse the full list when the box is empty.
 
 ## Usage
 - Install: `pip install -r requirements-dev.txt && cp sf-banner.js app/static/sf-banner.js`

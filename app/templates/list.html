@@ -5,6 +5,10 @@
 <p class="muted">Books we are reading, sorted by month. No login needed - members identify by first name.
    Do not enter personal or confidential data.</p>
 <a href="/books/new"><button>Add a book</button></a>
+<form method="get" action="/" class="search">
+  <input type="text" name="q" value="{{ q }}" maxlength="200" placeholder="Search by title or author">
+  <button>Search</button>
+</form>
 <ul class="list">
   {% for book in books %}
   <li>
@@ -31,7 +35,8 @@
     {% endif %}
   </li>
   {% else %}
-  <li class="muted">No books yet.</li>
+  {% if searched %}<li class="muted">No books match your search.</li>
+  {% else %}<li class="muted">No books yet.</li>{% endif %}
   {% endfor %}
 </ul>
 {% endblock %}
