@@ -201,6 +201,54 @@ def test_detail_no_ratings():
     assert "No ratings yet" in body
 
 
+def test_search_filters_by_title_case_insensitive():
+    _cleanup()
+    _add_book(title="1984", author="George Orwell", month="2026-01")
+    _add_book(title="Dune", author="F. Herbert", month="2026-02")
+    body = client.get("/?q=1984").text
+    assert "1984" in body
+    assert "Dune" not in body
+    body = client.get("/?q=orwell").text
+    assert "George Orwell" in body
+    assert "Dune" not in body
+
+
+def test_search_matches_author():
+    _cleanup()
+    _add_book(title="Dune", author="Frank Herbert", month="2026-01")
+    _add_book(title="1984", author="George Orwell", month="2026-02")
+    body = client.get("/?q=herbert").text
+    assert "Dune" in body
+    assert "1984" not in body
+
+
+def test_search_empty_q_returns_all_sorted():
+    _cleanup()
+    _add_book(title="May book", month="2026-05")
+    _add_book(title="Jan book", month="2026-01")
+    _add_book(title="Mar book", month="2026-03")
+    for url in ("/", "/?q=", "/?q=%20%20"):
+        body = client.get(url).text
+        assert body.index("Jan book") < body.index("Mar book") < body.index("May book")
+
+
+def test_search_no_match_message():
+    _cleanup()
+    _add_book(title="Dune", author="F. Herbert", month="2026-01")
+    body = client.get("/?q=zzz").text
+    assert "No books match your search." in body
+    assert "No books yet." not in body
+
+
+def test_search_input_present_with_banner():
+    _cleanup()
+    body = client.get("/").text
+    assert 'name="q"' in body
+    assert "sf-banner.js" in body
+    body = client.get("/?q=dune").text
+    assert 'value="dune"' in body
+
+
 def test_detail_unknown_book_redirects():
     _cleanup()
     r = client.get("/books/nope", follow_redirects=False)

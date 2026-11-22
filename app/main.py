@@ -37,8 +37,12 @@ def healthz():
 
 
 @app.get("/")
-def index(request: Request):
+def index(request: Request, q: str = ""):
+    q = q.strip()
     books = store.list("books", order_by="month")
+    if q:
+        needle = q.lower()
+        books = [b for b in books if needle in b.get("title", "").lower() or needle in b.get("author", "").lower()]
     ratings_by_book: dict[str, list] = {}
     for rating in store.list("ratings"):
         ratings_by_book.setdefault(rating.get("book_id"), []).append(rating)
@@ -46,7 +50,8 @@ def index(request: Request):
     for book in books:
         ratings = ratings_by_book.get(book["id"], [])
         avgs[book["id"]] = round(sum(r["stars"] for r in ratings) / len(ratings), 1) if ratings else None
-    return templates.TemplateResponse(request, "list.html", {"books": books, "avgs": avgs})
+    return templates.TemplateResponse(request, "list.html",
+                                     {"books": books, "avgs": avgs, "q": q, "searched": bool(q)})
 
 
 @app.get("/books/new")
