@@ -38,6 +38,16 @@ class MemoryStore:
         cur.update({**data, "updated_at": _now()})
         return dict(cur)
 
+    def upsert(self, collection: str, doc_id: str, data: dict) -> dict:
+        col = self._data.setdefault(collection, {})
+        existing = col.get(doc_id)
+        if existing:
+            existing.update({**data, "updated_at": _now()})
+            return dict(existing)
+        doc = {**data, "id": doc_id, "created_at": _now(), "updated_at": _now()}
+        col[doc_id] = doc
+        return dict(doc)
+
     def delete(self, collection: str, doc_id: str) -> bool:
         return self._data.get(collection, {}).pop(doc_id, None) is not None
 
@@ -73,6 +83,15 @@ class FirestoreStore:
             return None
         ref.update({**data, "updated_at": _now()})
         return self.get(collection, doc_id)
+
+    def upsert(self, collection: str, doc_id: str, data: dict) -> dict:
+        ref = self._db.collection(collection).document(doc_id)
+        snap = ref.get()
+        if snap.exists:
+            ref.update({**data, "updated_at": _now()})
+        else:
+            ref.set({**data, "created_at": _now(), "updated_at": _now()})
+        return self.get(collection, doc_id) or {}
 
     def delete(self, collection: str, doc_id: str) -> bool:
         ref = self._db.collection(collection).document(doc_id)

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Book Club{% endblock %}
+{% block content %}
+<h1>Office Book Club</h1>
+<p class="muted">Books we are reading, sorted by month. No login needed - members identify by first name.
+   Do not enter personal or confidential data.</p>
+<a href="/books/new"><button>Add a book</button></a>
+<ul class="list">
+  {% for book in books %}
+  <li>
+    <div>
+      <a href="/books/{{ book.id }}"><strong>{{ book.title }}</strong></a>
+      by {{ book.author }} &middot; {{ book.month }} &middot; suggested by {{ book.suggested_by }}
+      {% if book.status == 'current' %}<span class="badge current">Currently reading</span>
+      {% elif book.status == 'finished' %}<span class="badge finished">Finished</span>
+      {% else %}<span class="badge upcoming">Upcoming</span>{% endif %}
+    </div>
+    {% if book.status != 'current' %}
+    <form method="post" action="/books/{{ book.id }}/status" class="inline">
+      <input type="hidden" name="status" value="current">
+      <button>Mark current</button>
+    </form>
+    {% endif %}
+    {% if book.status != 'finished' %}
+    <form method="post" action="/books/{{ book.id }}/status" class="inline">
+      <input type="hidden" name="status" value="finished">
+      <button>Mark finished</button>
+    </form>
+    {% endif %}
+  </li>
+  {% else %}
+  <li class="muted">No books yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

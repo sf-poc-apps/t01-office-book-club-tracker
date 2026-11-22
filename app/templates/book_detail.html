@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ book.title }}{% endblock %}
+{% block content %}
+<h1>{{ book.title }}</h1>
+<p>
+  by {{ book.author }} &middot; {{ book.month }} &middot; suggested by {{ book.suggested_by }}
+  {% if book.status == 'current' %}<span class="badge current">Currently reading</span>
+  {% elif book.status == 'finished' %}<span class="badge finished">Finished</span>
+  {% else %}<span class="badge upcoming">Upcoming</span>{% endif %}
+</p>
+<p>
+  {% if book.status != 'current' %}
+  <form method="post" action="/books/{{ book.id }}/status" class="inline">
+    <input type="hidden" name="status" value="current"><button>Mark current</button>
+  </form>
+  {% endif %}
+  {% if book.status != 'finished' %}
+  <form method="post" action="/books/{{ book.id }}/status" class="inline">
+    <input type="hidden" name="status" value="finished"><button>Mark finished</button>
+  </form>
+  {% endif %}
+</p>
+
+<h2>Ratings</h2>
+{% if avg is not none %}<p><strong>Average rating: {{ avg }} / 5</strong> ({{ ratings | length }} rating{{ 's' if ratings | length != 1 }})</p>
+{% else %}<p class="muted">No ratings yet</p>{% endif %}
+<ul class="list">
+  {% for r in ratings %}
+  <li><strong>{{ r.first_name }}</strong>: {{ r.stars }} / 5 &mdash; {{ r.comment }}</li>
+  {% endfor %}
+</ul>
+
+{% if error %}<p class="error">Rating not saved. First name is required and stars must be between 1 and 5.</p>{% endif %}
+<form method="post" action="/books/{{ book.id }}/ratings" class="card">
+  <label>Your first name <input name="first_name" required maxlength="200"></label>
+  <label>Stars (1-5) <input name="stars" type="number" min="1" max="5" required></label>
+  <label>Comment (short, no confidential content) <textarea name="comment" maxlength="500"></textarea></label>
+  <button type="submit">Save rating</button>
+</form>
+<p class="muted">One rating per first name per book - submitting again updates your previous rating.
+   Two members sharing a first name will overwrite each other.</p>
+<p><a href="/">Back to the list</a></p>
+{% endblock %}
