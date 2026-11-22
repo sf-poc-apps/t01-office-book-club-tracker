@@ -11,6 +11,8 @@
     <div>
       <a href="/books/{{ book.id }}"><strong>{{ book.title }}</strong></a>
       by {{ book.author }} &middot; {{ book.month }} &middot; suggested by {{ book.suggested_by }}
+      {% if avgs[book.id] is not none %}<span class="rating">★ {{ '%.1f' | format(avgs[book.id]) }}</span>
+      {% else %}<span class="muted">No ratings yet</span>{% endif %}
       {% if book.status == 'current' %}<span class="badge current">Currently reading</span>
       {% elif book.status == 'finished' %}<span class="badge finished">Finished</span>
       {% else %}<span class="badge upcoming">Upcoming</span>{% endif %}

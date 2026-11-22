@@ -6,7 +6,8 @@ short comments. No login - members identify themselves by a first name.
 
 ## Features
 - Add a book (title, author, suggested by, month `YYYY-MM`).
-- Book list sorted by month with status badges (upcoming / currently reading / finished).
+- Book list sorted by month with status badges (upcoming / currently reading / finished)
+  and each book's average star rating (`★ 4.2`, or "No ratings yet" when unrated).
 - Mark a book current (only one book can be current at a time; the previous one becomes
   finished) or finished.
 - Rate a book 1-5 stars with a short comment, identified by first name. Submitting again

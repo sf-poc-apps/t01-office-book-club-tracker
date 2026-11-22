@@ -66,6 +66,44 @@ def test_list_sorted_by_month():
     assert body.index("Jan book") < body.index("Mar book") < body.index("May book")
 
 
+def test_list_shows_average_ratings():
+    _cleanup()
+    rated = _add_book(title="Rated book", month="2026-01")
+    unrated = _add_book(title="Unrated book", month="2026-02")
+    client.post(f"/books/{rated['id']}/ratings",
+                data={"first_name": "Sam", "stars": "4", "comment": "Solid"}, follow_redirects=False)
+    client.post(f"/books/{rated['id']}/ratings",
+                data={"first_name": "Jo", "stars": "5", "comment": "Loved it"}, follow_redirects=False)
+    body = client.get("/").text
+    rated_pos = body.index("Rated book")
+    unrated_pos = body.index("Unrated book")
+    assert "★ 4.5" in body and body.index("★ 4.5", rated_pos) < unrated_pos
+    assert "No ratings yet" in body and unrated_pos < body.index("No ratings yet", unrated_pos)
+    detail = client.get(f"/books/{rated['id']}").text
+    assert "4.5" in detail
+
+
+def test_list_average_matches_detail():
+    _cleanup()
+    a = _add_book(title="Book A", month="2026-01")
+    b = _add_book(title="Book B", month="2026-02")
+    client.post(f"/books/{a['id']}/ratings",
+                data={"first_name": "Sam", "stars": "3", "comment": "ok"}, follow_redirects=False)
+    client.post(f"/books/{a['id']}/ratings",
+                data={"first_name": "Jo", "stars": "4", "comment": "good"}, follow_redirects=False)
+    client.post(f"/books/{b['id']}/ratings",
+                data={"first_name": "Kim", "stars": "5", "comment": "wow"}, follow_redirects=False)
+    body = client.get("/").text
+    detail_a = client.get(f"/books/{a['id']}").text
+    detail_b = client.get(f"/books/{b['id']}").text
+    a_pos = body.index("Book A")
+    b_pos = body.index("Book B")
+    a_avg = body.index("★ 3.5", a_pos)
+    b_avg = body.index("★ 5.0", b_pos)
+    assert a_pos < a_avg < b_pos < b_avg
+    assert "3.5" in detail_a and "5.0" in detail_b
+
+
 def test_list_shows_current_status():
     _cleanup()
     _add_book(title="Hot book", status="current")
